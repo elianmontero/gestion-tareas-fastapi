@@ -15,7 +15,8 @@ def home():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Mi API de Tareas</title>
+        <title>API de Tareas</title>
+        <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2092/2092175.png" type="image/png">
         <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #f4f4f9; color: #333; padding: 50px; }
             .container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: inline-block; }
