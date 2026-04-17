@@ -1,0 +1,14 @@
+# Entornos virtuales (Ignora toda la carpeta)
+venv/
+env/
+.env/
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+
+# Base de datos (Ignora el archivo local)
+*.db
+
+# Archivos de configuración de VS Code
+.vscode/
