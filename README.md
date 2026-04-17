@@ -1,3 +1,7 @@
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
+
 📝 Task Manager API
 Esta es una API RESTful desarrollada con FastAPI para la gestión de tareas (CRUD). El proyecto utiliza SQLModel para la interacción con la base de datos SQLite, permitiendo una persistencia de datos eficiente y una validación de tipos robusta.
 
