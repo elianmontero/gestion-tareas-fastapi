@@ -1,9 +1,12 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 from database import engine, create_db_and_tables, get_session
 from models import Tarea
+
+# Configuración de plantillas (asegúrate de tener la carpeta 'templates')
+templates = Jinja2Templates(directory="templates")
 
 app = FastAPI()
 
@@ -15,7 +18,8 @@ def home():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Mi API de Tareas</title>
+        <title>API de Tareas</title>
+        <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2092/2092175.png" type="image/png">
         <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #f4f4f9; color: #333; padding: 50px; }
             .container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: inline-block; }
@@ -37,66 +41,42 @@ def home():
     </html>
     """
 
-# Esto crea las tablas en el archivo .db al arrancar
+
+# Crear tablas al iniciar
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
 
-# 1. Obtener todas las tareas
+# --- RUTAS DE API (Para Postman) ---
+
 @app.get("/tareas")
 def obtener_tareas(session: Session = Depends(get_session)):
-    # Usamos select(Tarea) para pedirle a SQLModel que busque en la tabla
-    tareas = session.exec(select(Tarea)).all()
-    return tareas
+    return session.exec(select(Tarea)).all()
 
-# 2. Crear una tarea nueva
 @app.post("/tareas")
 def crear_tarea(nueva_tarea: Tarea, session: Session = Depends(get_session)):
-    session.add(nueva_tarea) # Añade la instancia a la sesión
-    session.commit()         # Guarda los cambios en el archivo .db
-    session.refresh(nueva_tarea) # Actualiza el objeto (por ejemplo, para traer el ID)
+    session.add(nueva_tarea)
+    session.commit()
+    session.refresh(nueva_tarea)
     return {"mensaje": "Tarea creada con éxito", "tarea": nueva_tarea}
 
-# 3. Eliminar tarea por ID
 @app.delete("/tareas/{tarea_id}")
-def eliminar_tarea_por_id(tarea_id: int, session: Session = Depends(get_session)):
-    tarea = session.get(Tarea, tarea_id) # Busca directamente por ID
+def eliminar_tarea(tarea_id: int, session: Session = Depends(get_session)):
+    tarea = session.get(Tarea, tarea_id)
     if not tarea:
         raise HTTPException(status_code=404, detail="No encontré esa tarea")
-    
-    session.delete(tarea) # Marca la tarea para borrar
-    session.commit()      # Aplica el borrado en la base de datos
+    session.delete(tarea)
+    session.commit()
     return {"mensaje": f"Tarea {tarea_id} eliminada"}
 
-# 4. Marcar como completada
-@app.put("/tareas/{tarea_id}/completar")
-def marcar_tarea_completada(tarea_id: int, session: Session = Depends(get_session)):
-    tarea = session.get(Tarea, tarea_id)
-    if not tarea:
-        raise HTTPException(status_code=404, detail="No se encontró la tarea")
-    
-    tarea.completada = True
-    session.add(tarea) # Notificamos el cambio
-    session.commit()   # Guardamos
-    session.refresh(tarea)
-    return {"mensaje": f"Tarea {tarea_id} marcada como completada", "tarea": tarea}
+# --- RUTA DE VISUALIZACIÓN WEB (Para el navegador) ---
 
-# 5. Modificar título y descripción
-@app.put("/tareas/{tarea_id}/tarea_modificada")
-def cambiar_titulo_de_tarea(tarea_id: int, tarea_titulo: str, tarea_descripcion: str, session: Session = Depends(get_session)):
-    tarea = session.get(Tarea, tarea_id)
-    if not tarea:
-        raise HTTPException(status_code=404, detail="No se encontró la tarea")
-    
-    tarea.titulo = tarea_titulo
-    tarea.descripcion = tarea_descripcion
-    
-    session.add(tarea)
-    session.commit()
-    session.refresh(tarea)
-    return {"mensaje": f"Tarea {tarea_id} fue modificada con éxito", "tarea": tarea}
-
-# Nota sobre "eliminar-ultima": 
-# En bases de datos reales, no suele existir el concepto de "última" de forma automática 
-# como en las listas, ya que el orden puede variar. 
-# Es más seguro y profesional borrar siempre por ID.
+@app.get("/tareas-web", response_class=HTMLResponse)
+def visualizar_tareas(request: Request, session: Session = Depends(get_session)):
+    tareas = session.exec(select(Tarea)).all()
+    # Verifica que "tareas.html" exista dentro de la carpeta "templates"
+    return templates.TemplateResponse(
+        request=request, 
+        name="tareas.html", 
+        context={"tareas": tareas}
+    )

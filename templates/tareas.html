@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Tareas</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2092/2092175.png" type="image/png">
+    <style>
+        /* [PEGA AQUÍ EL CSS QUE ME PASASTE ANTES] */
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; padding: 24px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        .id-col { width: 60px; text-align: center; }
+        .completada-col { width: 110px; text-align: center; }
+        .check { color: #27ae60; font-weight: bold; }
+        .cross { color: #e74c3c; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Lista de Tareas</h2>
+    <table>
+        <thead>
+            <tr>
+                <th class="id-col">ID</th>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th class="completada-col">Completada</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tarea in tareas %}
+            <tr>
+                <td class="id-col">{{ tarea.id }}</td>
+                <td>{{ tarea.titulo }}</td>
+                <td>{{ tarea.descripcion }}</td>
+                <td class="completada-col">
+                    {% if tarea.completada %} <span class="check">✔</span> {% else %} <span class="cross">✘</span> {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
