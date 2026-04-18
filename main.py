@@ -71,6 +71,7 @@ def eliminar_tarea(tarea_id: int, session: Session = Depends(get_session)):
 
 # --- RUTA DE VISUALIZACIÓN WEB (Para el navegador) ---
 
+<<<<<<< HEAD
 @app.get("/tareas-web", response_class=HTMLResponse)
 def visualizar_tareas(request: Request, session: Session = Depends(get_session)):
     tareas = session.exec(select(Tarea)).all()
@@ -80,3 +81,24 @@ def visualizar_tareas(request: Request, session: Session = Depends(get_session))
         name="tareas.html", 
         context={"tareas": tareas}
     )
+=======
+# 5. Modificar título y descripción
+@app.put("/tareas/{tarea_id}/tarea_modificada")
+def cambiar_titulo_de_tarea(tarea_id: int, tarea_titulo: str, tarea_descripcion: str, session: Session = Depends(get_session)):
+    tarea = session.get(Tarea, tarea_id)
+    if not tarea:
+        raise HTTPException(status_code=404, detail="No se encontró la tarea")
+    
+    tarea.titulo = tarea_titulo
+    tarea.descripcion = tarea_descripcion
+    
+    session.add(tarea)
+    session.commit()
+    session.refresh(tarea)
+    return {"mensaje": f"Tarea {tarea_id} fue modificada con éxito", "tarea": tarea}
+
+# Nota sobre "eliminar-ultima": 
+# En bases de datos reales, no suele existir el concepto de "última" de forma automática 
+# como en las listas, ya que el orden puede variar. 
+# Es más seguro y profesional borrar siempre por ID.
+>>>>>>> 2446349d030d42a40fc8a7532dab264c436b822d
