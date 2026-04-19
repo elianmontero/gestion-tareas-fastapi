@@ -47,27 +47,12 @@ def home():
 def on_startup():
     create_db_and_tables()
 
-# --- RUTAS DE API (Para Postman) ---
 
+# 1. Mostrar tareas
 @app.get("/tareas")
 def obtener_tareas(session: Session = Depends(get_session)):
     return session.exec(select(Tarea)).all()
 
-@app.post("/tareas")
-def crear_tarea(nueva_tarea: Tarea, session: Session = Depends(get_session)):
-    session.add(nueva_tarea)
-    session.commit()
-    session.refresh(nueva_tarea)
-    return {"mensaje": "Tarea creada con éxito", "tarea": nueva_tarea}
-
-@app.delete("/tareas/{tarea_id}")
-def eliminar_tarea(tarea_id: int, session: Session = Depends(get_session)):
-    tarea = session.get(Tarea, tarea_id)
-    if not tarea:
-        raise HTTPException(status_code=404, detail="No encontré esa tarea")
-    session.delete(tarea)
-    session.commit()
-    return {"mensaje": f"Tarea {tarea_id} eliminada"}
 
 # --- RUTA DE VISUALIZACIÓN WEB (Para el navegador) ---
 
@@ -80,6 +65,48 @@ def visualizar_tareas(request: Request, session: Session = Depends(get_session))
         name="tareas.html", 
         context={"tareas": tareas}
     )
+
+
+# 2. Crear tarea
+@app.post("/tareas")
+def crear_tarea(nueva_tarea: Tarea, session: Session = Depends(get_session)):
+    session.add(nueva_tarea)
+    session.commit()
+    session.refresh(nueva_tarea)
+    return {"mensaje": "Tarea creada con éxito", "tarea": nueva_tarea}
+
+
+# 3. Eliminar tarea
+@app.delete("/tareas/{tarea_id}")
+def eliminar_tarea(tarea_id: int, session: Session = Depends(get_session)):
+    tarea = session.get(Tarea, tarea_id)
+    if not tarea:
+        raise HTTPException(status_code=404, detail="No encontré esa tarea")
+    session.delete(tarea)
+    session.commit()
+    return {"mensaje": f"Tarea {tarea_id} eliminada"}
+
+
+# 4. Marcar como completada
+@app.put("/tareas/{tarea_id}/completar")
+def marcar_tarea_completada(tarea_id: int, session: Session = Depends(get_session)):
+    # Buscamos la tarea por su ID
+    tarea = session.get(Tarea, tarea_id)
+    
+    # Si no existe, lanzamos un error 404
+    if not tarea:
+        raise HTTPException(status_code=404, detail="No se encontró la tarea")
+    
+    # Cambiamos el estado
+    tarea.completada = True
+    
+    # Guardamos los cambios
+    session.add(tarea)
+    session.commit()
+    session.refresh(tarea)
+    
+    return {"mensaje": f"Tarea {tarea_id} marcada como completada", "tarea": tarea}
+
 
 # 5. Modificar título y descripción
 @app.put("/tareas/{tarea_id}/tarea_modificada")
