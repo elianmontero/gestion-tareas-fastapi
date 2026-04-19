@@ -54,12 +54,9 @@ def obtener_tareas(session: Session = Depends(get_session)):
     return session.exec(select(Tarea)).all()
 
 
-# --- RUTA DE VISUALIZACIÓN WEB (Para el navegador) ---
-
 @app.get("/tareas-web", response_class=HTMLResponse)
 def visualizar_tareas(request: Request, session: Session = Depends(get_session)):
     tareas = session.exec(select(Tarea)).all()
-    # Verifica que "tareas.html" exista dentro de la carpeta "templates"
     return templates.TemplateResponse(
         request=request, 
         name="tareas.html", 
@@ -90,17 +87,13 @@ def eliminar_tarea(tarea_id: int, session: Session = Depends(get_session)):
 # 4. Marcar como completada
 @app.put("/tareas/{tarea_id}/completar")
 def marcar_tarea_completada(tarea_id: int, session: Session = Depends(get_session)):
-    # Buscamos la tarea por su ID
     tarea = session.get(Tarea, tarea_id)
     
-    # Si no existe, lanzamos un error 404
     if not tarea:
         raise HTTPException(status_code=404, detail="No se encontró la tarea")
     
-    # Cambiamos el estado
     tarea.completada = True
     
-    # Guardamos los cambios
     session.add(tarea)
     session.commit()
     session.refresh(tarea)
